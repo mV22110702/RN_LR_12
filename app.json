@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "LR_12",
+    "slug": "LR_12",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
