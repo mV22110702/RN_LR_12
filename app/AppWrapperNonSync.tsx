@@ -1,26 +1,38 @@
-import React from 'react';
-import {SafeAreaView, StyleSheet} from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { AppNonSync } from './AppNonSync';
 
-import colors from './styles/colors';
-import {AppNonSync} from './AppNonSync';
-
-import {RealmProvider} from '@realm/react';
-import {schemas} from './models';
+import { RealmProvider } from '@realm/react';
+import { schemas } from './models';
+import { NavigationContainer } from '@react-navigation/native';
+import { NativeBaseProvider, Spinner } from 'native-base';
+import { Provider } from 'react-redux';
+import { initDb } from '../libs/packages/sqlite-db/helpers/init-db.helper';
 
 export const AppWrapperNonSync = () => {
-  // If sync is disabled, setup the app without any sync functionality and return early
+  const realmRef = useRef<Realm | null>(null);
+  const [isDbAvailable, setIsDbAvailable] = useState<boolean>(false);
+  useEffect(() => {
+    (async () => {
+      if (!realmRef || isDbAvailable) {
+        return;
+      }
+      await initDb(realmRef);
+      setIsDbAvailable(true);
+    })();
+  }, [realmRef]);
+  console.log(isDbAvailable);
   return (
-    <SafeAreaView style={styles.screen}>
-      <RealmProvider schema={schemas}>
-        <AppNonSync />
-      </RealmProvider>
-    </SafeAreaView>
+    <NativeBaseProvider>
+      <NavigationContainer>
+        <RealmProvider
+          schema={schemas}
+          realmRef={realmRef}
+          schemaVersion={2}
+          deleteRealmIfMigrationNeeded
+        >
+          {isDbAvailable ? <AppNonSync /> : <Spinner />}
+        </RealmProvider>
+      </NavigationContainer>
+    </NativeBaseProvider>
   );
 };
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.darkBlue,
-  },
-});
